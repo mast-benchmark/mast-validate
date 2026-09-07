@@ -78,7 +78,7 @@ def test_non_jsonl_member_warns_and_other_track_language_is_error(tmp_path):
     members["extra.jsonl"] = dumps_jsonl(records_for("indic", "gu")).encode()
     z = make_zip(tmp_path / "ml.zip", members)
     r = validate_submission(z, track="multilingual")
-    assert kinds(r) == {"zip.member_ignored", "lang.not_in_track"} and r.exit_code == 2
+    assert kinds(r) == {"archive.member_ignored", "lang.not_in_track"} and r.exit_code == 2
     gu = next(f for f in r.files if f.name == "extra.jsonl")
     assert gu.language == "gu" and gu.inferred and gu.kinds() == {"lang.not_in_track"}
 
@@ -98,9 +98,9 @@ def test_duplicate_language_is_error(tmp_path):
     members["hindi.jsonl"] = members["hi.jsonl"]
     z = make_zip(tmp_path / "indic.zip", members)
     r = validate_submission(z, track="indic")
-    assert "zip.duplicate_language" in kinds(r) and r.exit_code == 2
+    assert "archive.duplicate_language" in kinds(r) and r.exit_code == 2
     copies = [f for f in r.files if f.language == "hi" and f.present]
-    assert len(copies) == 2 and all("zip.duplicate_language" in f.kinds() for f in copies)
+    assert len(copies) == 2 and all("archive.duplicate_language" in f.kinds() for f in copies)
 
 
 def test_unsafe_members_rejected_not_read(tmp_path):
@@ -109,8 +109,8 @@ def test_unsafe_members_rejected_not_read(tmp_path):
     del members["hi.jsonl"]
     z = make_zip(tmp_path / "indic.zip", members, infos)
     r = validate_submission(z, track="indic")
-    assert "zip.unsafe_member" in kinds(r) and r.exit_code == 2
-    f = next(x for x in r.findings if x.kind == "zip.unsafe_member")
+    assert "archive.unsafe_member" in kinds(r) and r.exit_code == 2
+    f = next(x for x in r.findings if x.kind == "archive.unsafe_member")
     assert f.count == 2 and any("symlink" in e for e in f.examples) and any("traversal" in e for e in f.examples)
 
 

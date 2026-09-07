@@ -6,8 +6,8 @@ from tests.conftest import REAL_DOCIDS, make_record
 
 @pytest.mark.parametrize("value,lang,qid,kind,recon", [
     ("hi-798", "hi", "hi-798", None, False),
-    ("HI-798", "hi", "hi-798", None, False),
-    ("hindi-798", "hi", "hi-798", None, False),
+    ("HI-798", "hi", None, "qid.malformed", False),
+    ("hindi-798", "hi", None, "qid.malformed", False),
     (" hi-798 ", "hi", "hi-798", None, False),
     (798, "hi", "hi-798", None, True),
     ("798", "hi", "hi-798", None, True),

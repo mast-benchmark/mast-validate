@@ -40,7 +40,7 @@ def test_tar_partial_and_noise(tmp_path):
     members["README.md"] = b"x"
     members["__MACOSX/._hi.jsonl"] = b"junk"
     r = validate_submission(make_tar(tmp_path / "x.tgz", members), track="indic")
-    assert r.kinds() == {"zip.member_ignored", "track.language_missing"} and r.exit_code == 1
+    assert r.kinds() == {"archive.member_ignored", "track.language_missing"} and r.exit_code == 1
     assert sum(1 for f in r.files if not f.present) == 7
 
 
@@ -51,7 +51,7 @@ def test_tar_unsafe_members(tmp_path):
     trav = tarfile.TarInfo("../evil.jsonl"); trav.size = 2
     absp = tarfile.TarInfo("/tmp/abs.jsonl"); absp.size = 2
     r = validate_submission(make_tar(tmp_path / "bad.tar", members, "w", infos=[(link, None), (hard, None), (trav, b"{}"), (absp, b"{}")]), track="indic")
-    f = next(x for x in r.findings if x.kind == "zip.unsafe_member")
+    f = next(x for x in r.findings if x.kind == "archive.unsafe_member")
     assert f.count == 4 and r.exit_code == 2
     assert {e.split(" (")[1].rstrip(")") for e in f.examples} == {"symlink", "hard link", "path traversal", "absolute path"}
     assert [x.language for x in r.files if x.present] == ["gu"]
@@ -61,4 +61,4 @@ def test_tar_duplicate_language(tmp_path):
     members = track_members("indic", langs=["hi"])
     members["again.jsonl"] = members["hi.jsonl"]
     r = validate_submission(make_tar(tmp_path / "d.tgz", members), track="indic")
-    assert "zip.duplicate_language" in r.kinds() and r.exit_code == 2
+    assert "archive.duplicate_language" in r.kinds() and r.exit_code == 2

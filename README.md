@@ -9,10 +9,14 @@ list ship inside the package.
 
 ## Install
 
+From a checkout or unpacked copy of this repository:
+
 ```bash
-pip install git+https://github.com/mast-benchmark/mast-validate.git
+pip install .
 mast-validate --version
 ```
+
+A public repository URL will be given in the track announcement.
 
 Python 3.9 or newer. The only dependency is `click`.
 
@@ -87,10 +91,12 @@ website; fields in full:
 The final `output_text` step's `output` must contain the substring
 `Exact Answer:`; that is what the exact-match scorer parses.
 
-**Language of a file.** Every record in a file must carry the same `language`
-(any form: `hi`, `Hindi`, `hindi`). The validator reads it from the records;
-a file whose records disagree, or that has no recognizable `language` field, is
-rejected. Query-id prefixes, when present, must agree with it too.
+**One run per file.** Every record in a file must carry the same `language`
+(any form: `hi`, `Hindi`, `hindi`), the same `llm` and the same `retriever`.
+`llm` and `retriever` are compared exactly, case-sensitive, after trimming
+whitespace. The validator reads all three from the records; a file whose
+records disagree, or that has no recognizable `language` field, is rejected.
+Query-id prefixes, when present, must be exactly the file's language code.
 
 **Query ids.** The released datasets use prefixed strings (`zh-798`), the
 website example shows a bare integer (`11`). Both are accepted. A bare number

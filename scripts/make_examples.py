@@ -87,7 +87,7 @@ def main(out: Path) -> None:
     emit("errors/coverage_missing.jsonl", hi(n=49), "49 of the 50 official ids", "coverage.missing")
     recs = hi(); recs[0]["retrieved_docids"] = [[81120, ""], REAL_DOCIDS[:2]]
     emit("errors/bad_docid_entry.jsonl", recs, "integer and empty docids", "docid.bad_entry")
-    emit("errors/empty.jsonl", None, "zero records", "coverage.missing (found 0 of 50)", raw="")
+    emit("errors/empty.jsonl", None, "zero records, so no language can be read", "lang.undetermined", raw="")
 
     # ---- warnings
     recs = hi(); recs[0]["retrieved_docids"] = [["doc_88213", "10986x"], REAL_DOCIDS[:2]]
@@ -121,11 +121,11 @@ def main(out: Path) -> None:
         for lang in TRACKS["indic"][:-1]:
             zf.writestr(f"{lang}.jsonl", dumps_jsonl(records_for("indic", lang)))
         zf.writestr("README.txt", "notes")
-    CASES.append(("zips/indic_partial.zip", "track.language_missing + zip.member_ignored (warnings)", "8 of 9 languages plus a stray file"))
+    CASES.append(("zips/indic_partial.zip", "track.language_missing + archive.member_ignored (warnings)", "8 of 9 languages plus a stray file"))
     with zipfile.ZipFile(zdir / "unsafe.zip", "w") as zf:
         zf.writestr("../escape.jsonl", "{}")
         zf.writestr("hi.jsonl", dumps_jsonl(hi()))
-    CASES.append(("zips/unsafe.zip", "zip.unsafe_member (error)", "path traversal member is rejected, hi.jsonl still validated"))
+    CASES.append(("zips/unsafe.zip", "archive.unsafe_member (error)", "path traversal member is rejected; hi.jsonl still validated; other languages missing (warning)"))
 
     lines = ["# Example submissions", "", "Built by `scripts/make_examples.py` from the real query ids and corpus docids.",
              "Validate any of them with, e.g.", "", "```", "mast-validate valid/hi.jsonl --track indic",
