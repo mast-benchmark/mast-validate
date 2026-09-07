@@ -27,15 +27,15 @@ mast-validate runs/run7.jsonl.gz --track multilingual
 mast-validate runs/hi.jsonl --track indic --language hi     # declare it; records must agree
 ```
 
-A whole track at once, as a zip of one `.jsonl` file per language, named however
-you like (a wrapper directory is fine):
+A whole track at once, as an archive (`.zip`, `.tar`, `.tar.gz`, `.tgz`) of one `.jsonl` file per
+language, named however you like (a wrapper directory is fine):
 
 ```bash
 mast-validate submission.zip --track multilingual --json report.json
+mast-validate runs.tar.gz --track indic
 ```
 
-The **portal accepts one per-language file per upload**, not a zip. The zip form
-is a convenience for checking everything locally in one go.
+The portal accepts the same inputs: one file, or one archive per track.
 
 | Flag | Effect |
 |---|---|
