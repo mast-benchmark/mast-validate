@@ -55,6 +55,7 @@ KINDS: dict[str, tuple[Level, Callable[[int, dict], str]]] = {
     "answer.no_exact_answer": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} with no 'Exact Answer:' in the final output_text"),
     "rounds.count_mismatch": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} where len(retrieved_docids) != tool_call_counts['search']"),
     "rounds.empty": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} with an empty search round"),
+    "meta.inconsistent": (Level.WARNING, lambda n, d: f"{n} distinct '{d.get('field')}' values in the file; the most common one ('{d.get('chosen')}') is recorded"),
     "keys.unknown": (Level.WARNING, lambda n, d: f"unknown top-level {_p(n, 'key')} ignored: {', '.join(d.get('keys', []))}"),
     "track.language_missing": (Level.WARNING, lambda n, d: f"missing (declared track expects {d.get('expected')} languages, found {d.get('found')})"),
     "zip.member_ignored": (Level.WARNING, lambda n, d: f"{_p(n, 'zip member')} ignored"),
@@ -102,6 +103,8 @@ class FileReport:
     records: int = 0
     findings: list[Finding] = field(default_factory=list)
     inferred: bool = False   # language inferred from the records rather than declared
+    llm: Optional[str] = None        # most common 'llm' value in the file
+    retriever: Optional[str] = None  # most common 'retriever' value in the file
 
     def add(self, kind: str, count: int = 1, examples=(), lines=(), **details: Any) -> Finding:
         f = Finding.make(kind, count, examples, lines, **details)
@@ -122,7 +125,7 @@ class FileReport:
     def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name, "track": self.track, "language": self.language, "inferred": self.inferred,
-            "present": self.present,
+            "llm": self.llm, "retriever": self.retriever, "present": self.present,
             "records": self.records, "errors": len(self.errors), "warnings": len(self.warnings),
             "findings": [f.to_dict() for f in sort_findings(self.findings)],
         }
