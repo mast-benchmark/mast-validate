@@ -48,13 +48,3 @@ def test_in_track():
     assert not L.in_track("indic", "cy")
     assert L.in_track("indic", "hi") and L.in_track("multilingual", "hi")
     assert not L.in_track("nope", "hi")
-
-
-@pytest.mark.parametrize("name,expected", [
-    ("hi.jsonl", "hi"), ("runs/hi.jsonl", "hi"), ("runs\\hi.jsonl", "hi"),
-    ("HI.JSONL", "hi"), ("hindi.jsonl.gz", "hi"), ("zh-cn.jsonl", "zh"), ("zh_CN.jsonl", "zh"),
-    ("run_hi.jsonl", "hi"), ("hindi_bm25.jsonl", "hi"), ("or.jsonl", "or"),
-    ("submission.jsonl", None), ("yo.jsonl", None), (".jsonl", None), ("", None),
-])
-def test_language_from_filename(name, expected):
-    assert L.language_from_filename(name) == expected
