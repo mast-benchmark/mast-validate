@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mast-validate"
+version = "0.1.0"
+description = "Offline validator for MAST @ FIRE 2026 run submissions."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = ["click>=8.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+build = ["huggingface_hub>=0.15", "pyarrow>=11"]
+
+[project.scripts]
+mast-validate = "mast_validate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mast_validate = ["resources/*.json", "resources/*.gz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
