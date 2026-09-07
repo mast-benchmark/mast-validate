@@ -47,6 +47,7 @@ KINDS: dict[str, tuple[Level, Callable[[int, dict], str]]] = {
     "qid.duplicate": (Level.ERROR, lambda n, d: f"{_p(n, 'query_id')} duplicated within the file"),
     "coverage.missing": (Level.ERROR, lambda n, d: f"coverage: {_p(n, 'official query_id')} missing (found {d.get('found')} of {d.get('expected')})"),
     "docid.bad_entry": (Level.ERROR, lambda n, d: f"{_p(n, 'record')} with a docid that is not a non-empty string"),
+    "meta.inconsistent": (Level.ERROR, lambda n, d: f"{n} distinct '{d.get('field')}' values in the file; every record must carry the same {d.get('field')}"),
     # ---- warnings ----
     "docid.unknown": (Level.WARNING, lambda n, d: f"{_p(n, 'distinct docid')} ({d.get('pct')}) not in the corpus"),
     "docid.unknown_majority": (Level.WARNING, lambda n, d: f"{_p(n, 'distinct docid')} ({d.get('pct')}) not in the MAST corpus; this looks like a different corpus was indexed"),
@@ -55,7 +56,6 @@ KINDS: dict[str, tuple[Level, Callable[[int, dict], str]]] = {
     "answer.no_exact_answer": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} with no 'Exact Answer:' in the final output_text"),
     "rounds.count_mismatch": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} where len(retrieved_docids) != tool_call_counts['search']"),
     "rounds.empty": (Level.WARNING, lambda n, d: f"{_p(n, 'record')} with an empty search round"),
-    "meta.inconsistent": (Level.WARNING, lambda n, d: f"{n} distinct '{d.get('field')}' values in the file; the most common one ('{d.get('chosen')}') is recorded"),
     "keys.unknown": (Level.WARNING, lambda n, d: f"unknown top-level {_p(n, 'key')} ignored: {', '.join(d.get('keys', []))}"),
     "track.language_missing": (Level.WARNING, lambda n, d: f"missing (declared track expects {d.get('expected')} languages, found {d.get('found')})"),
     "zip.member_ignored": (Level.WARNING, lambda n, d: f"{_p(n, 'zip member')} ignored"),
