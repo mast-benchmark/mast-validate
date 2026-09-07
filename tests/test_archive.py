@@ -63,6 +63,7 @@ def test_partial_track_is_warning(tmp_path):
     assert [f.language for f in missing] == ["te"]
     assert missing[0].findings[0].kind == "track.language_missing"
     assert missing[0].findings[0].details == {"expected": 9, "found": 8}
+    assert all(f.inferred for f in r.files if f.present)
 
 
 def test_empty_zip(tmp_path):
@@ -71,24 +72,25 @@ def test_empty_zip(tmp_path):
     assert r.exit_code == 1 and sum(1 for f in r.files if not f.present) == 9
 
 
-def test_non_language_member_warns_and_other_track_language_ignored(tmp_path):
+def test_non_jsonl_member_warns_and_other_track_language_is_error(tmp_path):
     members = track_members("multilingual")
     members["README.txt"] = b"hello"
-    members["gu.jsonl"] = dumps_jsonl(records_for("indic", "gu")).encode()
+    members["extra.jsonl"] = dumps_jsonl(records_for("indic", "gu")).encode()
     z = make_zip(tmp_path / "ml.zip", members)
     r = validate_submission(z, track="multilingual")
-    assert kinds(r) == {"zip.member_ignored"} and r.exit_code == 1
-    f = r.findings[0]
-    assert f.count == 2 and any("gu.jsonl" in e for e in f.examples)
+    assert kinds(r) == {"zip.member_ignored", "lang.not_in_track"} and r.exit_code == 2
+    gu = next(f for f in r.files if f.name == "extra.jsonl")
+    assert gu.language == "gu" and gu.inferred and gu.kinds() == {"lang.not_in_track"}
 
 
-def test_language_name_and_alias_filenames(tmp_path):
-    members = {"Hindi.jsonl": dumps_jsonl(records_for("indic", "hi")).encode(),
-               "run_gu.jsonl.gz": __import__("gzip").compress(dumps_jsonl(records_for("indic", "gu")).encode())}
+def test_member_names_do_not_matter(tmp_path):
+    members = {"run-A.jsonl": dumps_jsonl(records_for("indic", "hi")).encode(),
+               "zh.jsonl.gz": __import__("gzip").compress(dumps_jsonl(records_for("indic", "gu")).encode())}
     z = make_zip(tmp_path / "indic.zip", members)
     r = validate_submission(z, track="indic")
     present = {f.language: f for f in r.files if f.present}
-    assert set(present) == {"hi", "gu"} and all(f.findings == [] for f in present.values())
+    assert set(present) == {"hi", "gu"} and all(f.findings == [] and f.inferred for f in present.values())
+    assert present["gu"].name == "zh.jsonl.gz"
 
 
 def test_duplicate_language_is_error(tmp_path):
@@ -97,7 +99,8 @@ def test_duplicate_language_is_error(tmp_path):
     z = make_zip(tmp_path / "indic.zip", members)
     r = validate_submission(z, track="indic")
     assert "zip.duplicate_language" in kinds(r) and r.exit_code == 2
-    assert not any(f.language == "hi" and f.present for f in r.files)  # neither copy validated
+    copies = [f for f in r.files if f.language == "hi" and f.present]
+    assert len(copies) == 2 and all("zip.duplicate_language" in f.kinds() for f in copies)
 
 
 def test_unsafe_members_rejected_not_read(tmp_path):

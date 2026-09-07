@@ -18,14 +18,17 @@ Python 3.9 or newer. The only dependency is `click`.
 
 ## Run
 
-One file, declaring the track and language:
+One file. The language is read from the records themselves (the `language`
+field, which every record must carry), so the filename does not matter:
 
 ```bash
-mast-validate runs/hi.jsonl --track indic --language hi
-mast-validate runs/chinese.jsonl.gz --track multilingual        # language read from the filename
+mast-validate runs/hi.jsonl --track indic
+mast-validate runs/run7.jsonl.gz --track multilingual
+mast-validate runs/hi.jsonl --track indic --language hi     # declare it; records must agree
 ```
 
-A whole track at once, as a zip of `{lang}.jsonl` files (a wrapper directory is fine):
+A whole track at once, as a zip of one `.jsonl` file per language, named however
+you like (a wrapper directory is fine):
 
 ```bash
 mast-validate submission.zip --track multilingual --json report.json
@@ -37,7 +40,7 @@ is a convenience for checking everything locally in one go.
 | Flag | Effect |
 |---|---|
 | `--track {multilingual,indic}` | required |
-| `--language LANG` | declared language of a single file (code or name); default: inferred from the filename |
+| `--language LANG` | declare the language of a single file (code or name); default: read from the records |
 | `--strict` | warnings become errors |
 | `--json PATH` | machine-readable report (`-` for stdout) |
 | `--max-examples N` | examples per finding, default 10 |
@@ -84,10 +87,15 @@ website; fields in full:
 The final `output_text` step's `output` must contain the substring
 `Exact Answer:`; that is what the exact-match scorer parses.
 
+**Language of a file.** Every record in a file must carry the same `language`
+(any form: `hi`, `Hindi`, `hindi`). The validator reads it from the records;
+a file whose records disagree, or that has no recognizable `language` field, is
+rejected. Query-id prefixes, when present, must agree with it too.
+
 **Query ids.** The released datasets use prefixed strings (`zh-798`), the
 website example shows a bare integer (`11`). Both are accepted. A bare number
-is combined with the declared language and produces one warning per file so
-you know it happened. A *wrong* prefix (`zh-798` inside the Hindi file) is an
+is combined with the file's language and produces one warning per file so
+you know it happened. A *wrong* prefix (`zh-798` inside a Hindi file) is an
 error, because it almost always means the wrong file was uploaded.
 
 **Retrieved docids** must be nested by search round. A flat list of docids
@@ -105,13 +113,13 @@ listing them.
 
 * `.jsonl` or gzipped `.jsonl.gz`; gzip is detected from the content, not the name.
 * Caps: 200 MB on disk, 2 GB decompressed. A real file is a few MB.
-* Language from the filename works for `hi.jsonl`, `hindi.jsonl`, `zh-cn.jsonl`, `run_hi.jsonl`; when in doubt pass `--language`.
+* Filenames carry no meaning; the records decide the language. Pass `--language` to assert what you expect.
 
 ## Using it from Python
 
 ```python
 from mast_validate.runner import single_file_report
-report = single_file_report("runs/hi.jsonl", track="indic", lang="hi")
+report = single_file_report("runs/hi.jsonl", track="indic", lang=None)   # or lang="hi" to declare it
 report.status, report.exit_code, report.kinds(), report.to_dict()
 ```
 

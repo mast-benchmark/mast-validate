@@ -12,9 +12,12 @@ def test_clean_file_exit_0(tmp_path, cli):
     assert "PASSED" in r.output and "50 records" in r.output
 
 
-def test_language_inferred_from_filename(tmp_path, cli):
-    p = write_jsonl(tmp_path / "hindi.jsonl", records_for("indic", "hi"))
-    assert cli(p, "--track", "INDIC").exit_code == 0
+def test_language_inferred_from_records_not_filename(tmp_path, cli):
+    p = write_jsonl(tmp_path / "anything_at_all.jsonl", records_for("indic", "hi"))
+    r = cli(p, "--track", "INDIC")
+    assert r.exit_code == 0 and "[hi]" in r.output
+    q = write_jsonl(tmp_path / "zh.jsonl", records_for("indic", "hi"))  # misleading name is ignored
+    assert cli(q, "--track", "indic").exit_code == 0
 
 
 def test_language_name_flag(tmp_path, cli):
@@ -44,8 +47,6 @@ def test_usage_errors_exit_3(tmp_path, cli):
     assert cli(tmp_path / "nope.jsonl", "--track", "indic").exit_code == 3     # missing file
     assert cli(p).exit_code == 3                                               # no --track
     assert cli(p, "--track", "indic", "--bogus").exit_code == 3                # bad flag
-    q = write_jsonl(tmp_path / "submission.jsonl", records_for("indic", "hi"))
-    assert cli(q, "--track", "indic").exit_code == 3                           # language not inferable
 
 
 def test_json_output_file_and_stdout(tmp_path, cli):
