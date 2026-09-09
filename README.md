@@ -9,14 +9,12 @@ list ship inside the package.
 
 ## Install
 
-From a checkout or unpacked copy of this repository:
-
 ```bash
-pip install .
+pip install git+https://github.com/mast-benchmark/mast-validate
 mast-validate --version
 ```
 
-A public repository URL will be given in the track announcement.
+Or `pip install .` from a checkout.
 
 Python 3.9 or newer. The only dependency is `click`.
 
